@@ -7,6 +7,7 @@ import dev.zwazel.autobattler.classes.enums.Side;
 import dev.zwazel.autobattler.classes.enums.UnitTypes;
 import dev.zwazel.autobattler.classes.exceptions.UnknownUnitType;
 import dev.zwazel.autobattler.classes.units.MyFirstUnit;
+import dev.zwazel.autobattler.classes.units.Sniper;
 import dev.zwazel.autobattler.classes.units.Unit;
 
 public class UnitTypeParser {
@@ -17,6 +18,11 @@ public class UnitTypeParser {
             switch (type) {
                 case MY_FIRST_UNIT -> {
                     return new MyFirstUnit(unitJson.get("id").getAsLong(), unitJson.get("priority").getAsInt(),
+                            unitJson.get("level").getAsInt(), unitJson.get("name").getAsString(),
+                            new Vector(unitJson.get("position").getAsJsonObject()), battler, side);
+                }
+                case SNIPER -> {
+                    return new Sniper(unitJson.get("id").getAsLong(), unitJson.get("priority").getAsInt(),
                             unitJson.get("level").getAsInt(), unitJson.get("name").getAsString(),
                             new Vector(unitJson.get("position").getAsJsonObject()), battler, side);
                 }

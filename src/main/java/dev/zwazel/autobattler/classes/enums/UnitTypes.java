@@ -2,7 +2,8 @@ package dev.zwazel.autobattler.classes.enums;
 
 public enum UnitTypes {
     NOT_EXISTENT,
-    MY_FIRST_UNIT;
+    MY_FIRST_UNIT,
+    SNIPER;
 
     public static UnitTypes findUnitType(String name) {
         for (UnitTypes type : UnitTypes.values()) {
