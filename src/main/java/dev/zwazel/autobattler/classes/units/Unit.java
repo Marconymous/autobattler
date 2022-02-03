@@ -216,4 +216,6 @@ public abstract class Unit implements Obstacle, Cloneable {
             throw new AssertionError();
         }
     }
+
+    public abstract void energyReduction(Ability ability);
 }

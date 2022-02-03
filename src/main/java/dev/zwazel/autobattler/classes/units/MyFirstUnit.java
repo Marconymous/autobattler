@@ -97,8 +97,13 @@ public class MyFirstUnit extends Unit {
     }
 
     @Override
+    public void energyReduction(Ability ability) {
+        this.setEnergy(this.getEnergy() - ability.getOutPutAmount());
+    }
+
+    @Override
     public ActionHistory run() {
-        Action todoAction = null;
+        Action todoAction;
         Unit[] targets = new Unit[0];
         Ability suitableAbility = null;
         Vector[] targetPositions = new Vector[0];

@@ -88,11 +88,11 @@ public class BattlerGen2 {
                     Vector posBefore = unit.getGridPosition();
                     // TODO: 27.01.2022 update the way units die, think about how it should work!
                     if (unit.getMyState() != State.ALIVE) {
-                        if (unit.getSide() == FRIENDLY) {
-                            friendlyUnitList.remove(unit);
-                        } else if (unit.getSide() == ENEMY) {
-                            enemyUnitList.remove(unit);
+                        switch (unit.getSide()){
+                            case FRIENDLY -> friendlyUnitList.remove(unit);
+                            case ENEMY -> enemyUnitList.remove(unit);
                         }
+
                         grid.updateOccupiedGrid(posBefore, null);
                         history.addActionHistory(new ActionHistory(Action.DIE, unit, new Unit[0], null, new Vector[]{unit.getGridPosition()}));
                         unitIterator.remove();
@@ -104,7 +104,7 @@ public class BattlerGen2 {
                 }
 
                 if (friendlyUnitList.size() <= 0) {
-                    winningSide = Side.ENEMY;
+                    winningSide = ENEMY;
                     fightFinished = true;
                 } else if (enemyUnitList.size() <= 0) {
                     winningSide = FRIENDLY;

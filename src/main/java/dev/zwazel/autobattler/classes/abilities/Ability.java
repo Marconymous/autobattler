@@ -78,6 +78,7 @@ public abstract class Ability extends RoundAffected {
             case STAMINA -> {
 
             }
+            case ENERGY -> target.energyReduction(this);
         }
     }
 
