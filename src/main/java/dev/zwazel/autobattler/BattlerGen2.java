@@ -20,6 +20,7 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.ListIterator;
 
 import static dev.zwazel.autobattler.classes.enums.Side.ENEMY;
@@ -37,7 +38,7 @@ public class BattlerGen2 {
     private Side winningSide;
 
     public BattlerGen2() {
-        grid = new Grid(new Vector(0, 0));
+        grid = new Grid(new Vector(10, 10));
         friendlyUnitList = new ArrayList<>();
         enemyUnitList = new ArrayList<>();
     }
@@ -78,50 +79,38 @@ public class BattlerGen2 {
             }
 
             history = new History(new Formation(friendlyUser, new ArrayList<>(friendlyUnitList)), new Formation(enemyUser, new ArrayList<>(enemyUnitList)), this);
-
-            drawBoard();
             int roundCounter = 0;
-            while (!fightFinished) {
-                ListIterator<Unit> unitIterator = units.listIterator();
-                while (unitIterator.hasNext()) {
-                    Unit unit = unitIterator.next();
-                    Vector posBefore = unit.getGridPosition();
-                    // TODO: 27.01.2022 update the way units die, think about how it should work!
-                    if (unit.getMyState() != State.ALIVE) {
-                        switch (unit.getSide()){
-                            case FRIENDLY -> friendlyUnitList.remove(unit);
-                            case ENEMY -> enemyUnitList.remove(unit);
-                        }
 
-                        grid.updateOccupiedGrid(posBefore, null);
-                        history.addActionHistory(new ActionHistory(Action.DIE, unit, new Unit[0], null, new Vector[]{unit.getGridPosition()}));
-                        unitIterator.remove();
-                    } else {
-                        history.addActionHistory(unit.run());
-                        grid.updateOccupiedGrid(posBefore, null);
-                        grid.updateOccupiedGrid(unit.getGridPosition(), unit);
-                    }
-                }
-
-                if (friendlyUnitList.size() <= 0) {
-                    winningSide = ENEMY;
-                    fightFinished = true;
-                } else if (enemyUnitList.size() <= 0) {
-                    winningSide = FRIENDLY;
-                    fightFinished = true;
-                }
+            if (runWithGUI) {
+                GUI gui = new GUI(this, 50);
+            } else {
                 drawBoard();
-                roundCounter++;
-            }
+                while (!fightFinished) {
+                    ListIterator<Unit> unitIterator = units.listIterator();
+                    while (unitIterator.hasNext()) {
+                        doTurn(unitIterator, true);
+                    }
 
-            System.out.println("fight done after " + (roundCounter) + " turns!");
-            System.out.println("winningSide = " + winningSide);
+                    if (friendlyUnitList.size() <= 0) {
+                        winningSide = Side.ENEMY;
+                        fightFinished = true;
+                    } else if (enemyUnitList.size() <= 0) {
+                        winningSide = FRIENDLY;
+                        fightFinished = true;
+                    }
+                    drawBoard();
+                    roundCounter++;
+                }
 
-            if (createJson) {
-                try {
-                    new Export().export(history);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                System.out.println("fight done after " + (roundCounter) + " turns!");
+                System.out.println("winningSide = " + winningSide);
+
+                if (createJson) {
+                    try {
+                        new Export().export(history);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         } catch (URISyntaxException | FileNotFoundException | UnknownUnitType e) {
@@ -167,6 +156,36 @@ public class BattlerGen2 {
         return closestUnit;
     }
 
+    public void doTurn(Iterator<Unit> unitIterator, boolean createHistory) {
+        Unit unit = unitIterator.next();
+        doTurn(unitIterator, unit, createHistory);
+    }
+
+    public ActionHistory doTurn(Iterator<Unit> unitIterator, Unit unit, boolean createHistory) {
+        Vector posBefore = unit.getGridPosition();
+        // TODO: 27.01.2022 update the way units die, think about how it should work!
+        if (unit.getMyState() != State.ALIVE) {
+            if (unit.getSide() == FRIENDLY) {
+                friendlyUnitList.remove(unit);
+            } else if (unit.getSide() == ENEMY) {
+                enemyUnitList.remove(unit);
+            }
+            grid.updateOccupiedGrid(posBefore, null);
+            if (createHistory) {
+                history.addActionHistory(new ActionHistory(Action.DIE, unit, new Unit[0], null, new Vector[]{unit.getGridPosition()}));
+            }
+            unitIterator.remove();
+        } else {
+            ActionHistory actionHistory = unit.run();
+            if (createHistory) {
+                history.addActionHistory(actionHistory);
+            }
+            grid.updateOccupiedGrid(posBefore, null);
+            grid.updateOccupiedGrid(unit.getGridPosition(), unit);
+            return actionHistory;
+        }
+        return null;
+    }
 
     private void drawBoard() {
         StringBuilder vertical = new StringBuilder();
